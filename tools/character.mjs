@@ -110,8 +110,8 @@ function skinSDF(x, y, z) {
   d = smin(d, sdRoundCone(x, y, z, [0, 1.27, -0.01], [0, 1.12, 0.0], 0.072, 0.066), 0.03); // neck
   for (const s of [-1, 1]) {
     d = smin(d, sdEllipsoid(x, y, z, s * 0.2, 1.35, 0.0, 0.03, 0.05, 0.03), 0.02); // ears
-    d = smin(d, sdRoundCone(x, y, z, [s * 0.2, 0.93, 0.03], [s * 0.222, 0.76, 0.07], 0.05, 0.032), 0.02); // forearm
-    d = smin(d, sdEllipsoid(x, y, z, s * 0.23, 0.7, 0.085, 0.038, 0.052, 0.03), 0.02); // hand
+    d = smin(d, sdRoundCone(x, y, z, [s * 0.2, 0.93, 0.03], [s * 0.25, 0.78, 0.09], 0.05, 0.032), 0.02); // forearm, angled out and forward so it clears the skirt
+    d = smin(d, sdEllipsoid(x, y, z, s * 0.27, 0.73, 0.11, 0.038, 0.052, 0.03), 0.02); // hand, overlapping the wrist
   }
   return d;
 }
@@ -243,7 +243,7 @@ function bootSDF(x, y, z) {
 
 // ---------- build ----------
 export const PARTS = {
-  skin: { sdf: skinSDF, bounds: [[-0.3, 0.6, -0.25], [0.3, 1.62, 0.25]], cell: 0.006 },
+  skin: { sdf: skinSDF, bounds: [[-0.34, 0.6, -0.25], [0.34, 1.62, 0.25]], cell: 0.006 }, // wide enough for the outstretched hands
   hair: { sdf: hairSDF, bounds: [[-0.46, 0.6, -0.4], [0.46, 1.84, 0.32]], cell: 0.0055 },
   sleeve: { sdf: sleeveSDF, bounds: [[-0.3, 0.85, -0.16], [0.3, 1.2, 0.16]], cell: 0.0045 },
   dress: { sdf: dressSDF, bounds: [[-0.46, 0.36, -0.46], [0.46, 1.16, 0.46]], cell: 0.008 },

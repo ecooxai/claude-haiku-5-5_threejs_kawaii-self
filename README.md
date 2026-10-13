@@ -21,5 +21,5 @@ WebGL2 does not work in headless mode here, so capture under a virtual display:
 Software GL is occasionally flaky: if the PNGs come out blank, run the command again.
 
 ## Status
-- Score: about 82/100 (self-assessed, see `renders/`).
-- Known gaps: arms hang straight and the hands are simple mitts; the hair and the skirt have no outline (outline shells showed through the gaps between strands and the pleats), so they rely on baked sheen and toon shading; from the side the bangs read as drips.
+- Score: about 84/100 (self-assessed, see `renders/`).
+- Known gaps: the hands are plain mitts (no fingers or thumb) and the arms are stiff; the hair and the skirt have no outline (outline shells showed through the gaps between strands and the pleats), so they rely on baked sheen and toon shading; from the side the crown still shows streaks where the bangs meet the cap.
