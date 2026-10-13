@@ -177,12 +177,27 @@ async function loadPart(name) {
   g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
   g.setAttribute('normal', new THREE.BufferAttribute(nrm, 3));
   g.setIndex(new THREE.BufferAttribute(idx, 1));
+  if (name === 'hair') bakeSheen(g, C.hair, C.hairHi);
   return g;
+}
+
+// baked vertex colours: a light sheen where the normal faces the key light (the light is static)
+function bakeSheen(g, baseHex, hiHex) {
+  const n = g.attributes.normal.array, count = g.attributes.normal.count;
+  const L = new THREE.Vector3(0.35, 0.9, 0.5).normalize();
+  const base = new THREE.Color(baseHex), hi = new THREE.Color(hiHex), c = new THREE.Color();
+  const col = new Float32Array(count * 3);
+  for (let i = 0; i < count; i++) {
+    const d = Math.max(0, n[i * 3] * L.x + n[i * 3 + 1] * L.y + n[i * 3 + 2] * L.z);
+    c.copy(base).lerp(hi, Math.pow(d, 8));
+    col.set([c.r, c.g, c.b], i * 3);
+  }
+  g.setAttribute('color', new THREE.BufferAttribute(col, 3));
 }
 
 const PART_STYLE = {
   skin: { mat: toon(C.skin), outline: 0.0035 },
-  hair: { mat: toon(C.hair), outline: 0.0022 },
+  hair: { mat: toon(0xffffff, { side: THREE.DoubleSide, vertexColors: true }), outline: 0 }, // no shell: outlines show through the gaps between strands
   sleeve: { mat: toon(C.dress), outline: 0.0035 },
   dress: { mat: toon(C.dress), outline: 0.0035 },
   petticoat: { mat: toon(0xffc6e6), outline: 0.0035 },
@@ -369,14 +384,39 @@ pin.position.set(-0.12, HY + 0.2, 0.2);
 pin.rotation.z = 0.2;
 addTo(body, pin, true, 0.002);
 
-// floating sparkles
+// floating sparkles: camera-facing glint sprites (flat stars look like bars from the side)
+function sparkleTexture() {
+  const cv = document.createElement('canvas');
+  cv.width = cv.height = 128;
+  const g = cv.getContext('2d');
+  const glow = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+  glow.addColorStop(0, 'rgba(255,255,240,1)');
+  glow.addColorStop(0.35, 'rgba(255,243,168,0.8)');
+  glow.addColorStop(1, 'rgba(255,243,168,0)');
+  g.fillStyle = glow;
+  g.fillRect(0, 0, 128, 128);
+  g.beginPath();
+  for (let i = 0; i < 8; i++) {
+    const r = i % 2 === 0 ? 60 : 12;
+    const a = (i / 8) * Math.PI * 2 - Math.PI / 2;
+    const x = 64 + Math.cos(a) * r, y = 64 + Math.sin(a) * r;
+    i === 0 ? g.moveTo(x, y) : g.lineTo(x, y);
+  }
+  g.closePath();
+  g.fillStyle = '#fff3a8';
+  g.fill();
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+const sparkleMap = sparkleTexture();
 const sparkles = [];
 for (let i = 0; i < 9; i++) {
-  const m = new THREE.Mesh(starGeo, starMat);
+  const m = new THREE.Sprite(new THREE.SpriteMaterial({ map: sparkleMap, transparent: true, depthWrite: false }));
   const a = (i / 9) * Math.PI * 2;
   m.position.set(Math.cos(a) * 0.8, 1.1 + (i % 3) * 0.28, Math.sin(a) * 0.7 - 0.05);
   m.userData = { base: m.position.clone(), phase: i * 0.9, scale: 0.7 + (i % 3) * 0.25 };
-  m.scale.setScalar(m.userData.scale);
+  m.scale.setScalar(0.22 * m.userData.scale);
   character.add(m);
   sparkles.push(m);
 }
@@ -400,7 +440,7 @@ scene.add(shadowCatcher);
 const loading = Object.entries(PART_STYLE).map(async ([name, style]) => {
   const geo = await loadPart(name);
   const mesh = new THREE.Mesh(geo, style.mat);
-  addTo(body, mesh, true, style.outline);
+  addTo(body, mesh, style.outline > 0, style.outline);
 });
 const ready = Promise.all(loading);
 
@@ -449,8 +489,8 @@ function frame() {
   sparkles.forEach((m) => {
     const d = m.userData;
     m.position.y = d.base.y + Math.sin(t * 1.4 + d.phase) * 0.06;
-    m.rotation.z = t * 0.9 + d.phase;
-    m.rotation.y = Math.sin(t * 0.7 + d.phase) * 0.4;
+    m.material.rotation = t * 0.9 + d.phase;
+    m.scale.setScalar(0.22 * d.scale * (0.85 + 0.15 * Math.sin(t * 2.2 + d.phase)));
   });
   if (mode === 'spin') {
     spinAngle += 0.004;

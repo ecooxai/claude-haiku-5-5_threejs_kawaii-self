@@ -22,4 +22,4 @@ Software GL is occasionally flaky: if the PNGs come out blank, run the command a
 
 ## Status
 - Score: about 80/100 (self-assessed, see `renders/`).
-- Known gaps: arms hang straight and the hands are simple mitts; the hair has no sheen band; the dress folds are subtle; the tail tips are still a little comb-like.
+- Known gaps: arms hang straight and the hands are simple mitts; the hair has no outline (an outline shell showed through the gaps between back strands) and only a baked sheen; the dress folds are subtle.
