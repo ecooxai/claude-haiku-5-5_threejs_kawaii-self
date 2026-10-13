@@ -218,7 +218,7 @@ function eyeTexture(flip) {
 
 function eyeMesh(flip, x) {
   const mat = new THREE.MeshBasicMaterial({ map: eyeTexture(flip), transparent: true, alphaTest: 0.05 });
-  const m = new THREE.Mesh(new THREE.PlaneGeometry(0.105, 0.125), mat);
+  const m = new THREE.Mesh(new THREE.PlaneGeometry(0.115, 0.14), mat);
   m.position.set(x, -0.012, 0.198);
   m.rotation.z = flip ? 0.05 : -0.05;
   head.add(m);
@@ -227,6 +227,20 @@ function eyeMesh(flip, x) {
 }
 eyeMesh(false, -0.085);
 eyeMesh(true, 0.085);
+
+// eyelashes: short tapered strands fanning from the top lid, outer side longer
+const lashMat = toon(0x2a1c3e);
+for (const s of [-1, 1]) {
+  const cx = s * 0.085, cy = -0.012, rx = 0.058, ry = 0.072;
+  for (let k = 0; k < 5; k++) {
+    const a = Math.PI * (0.55 + k * 0.1) + (s > 0 ? 0 : 0); // top arc, sweep from centre
+    const aa = s < 0 ? Math.PI - a : a;                     // outer corner gets the longer lashes
+    const rxRoot = cx + rx * Math.cos(aa), ryRoot = cy + ry * Math.sin(aa);
+    const reach = 0.03 - k * 0.003;
+    const tip = [rxRoot + Math.cos(aa) * reach * 0.8, ryRoot + reach * 0.9, 0.2];
+    head.add(strand([[rxRoot, ryRoot, 0.2], [(rxRoot + tip[0]) / 2, (ryRoot + tip[1]) / 2 + 0.004, 0.2], tip], 0.0046, 0.0008, { seg: 8, radial: 6 }, lashMat));
+  }
+}
 
 // blush
 const blushMat = new THREE.MeshBasicMaterial({ color: 0xff8fb4, transparent: true, opacity: 0.45, depthWrite: false });
@@ -265,6 +279,22 @@ cap.scale.set(1.0, 1.03, 1.04);
 cap.rotation.x = -0.12;
 addTo(head, cap, true, 0.005);
 
+// sheen: thin lighter arcs following the cap surface for a glossy highlight
+const capCenter = new THREE.Vector3(0, 0.075, -0.035);
+for (const [theta, span] of [[0.5, 0.9], [0.8, 0.8], [1.05, 0.55]]) {
+  const pts = [];
+  for (let k = 0; k <= 6; k++) {
+    const phi = -span + (k / 6) * 2 * span;
+    const R = 0.252;
+    pts.push([
+      capCenter.x + R * Math.sin(theta) * Math.sin(phi) * 1.0,
+      capCenter.y + R * Math.cos(theta),
+      capCenter.z + R * Math.sin(theta) * Math.cos(phi),
+    ]);
+  }
+  head.add(strand(pts, 0.0065, 0.0025, { seg: 20, radial: 6 }, hairHiMat));
+}
+
 // under-layer (deeper tone) for depth behind head
 const under = new THREE.Mesh(new THREE.SphereGeometry(0.235, 48, 28, 0, Math.PI * 2, 0.5, Math.PI * 0.6), hairDeepMat);
 under.position.set(0, 0.05, -0.07);
@@ -282,6 +312,17 @@ const bangPaths = [
 bangPaths.forEach((p, i) => {
   const r0 = i < 4 ? 0.033 : 0.03;
   addTo(head, strand(p, r0, 0.004, { seg: 24, radial: 10, pow: 0.9 }, i % 2 ? hairMat : hairHiMat), true, 0.003);
+});
+
+// wispy side strands framing the face, tapering toward the cheeks
+[[-1, 0], [1, 0], [-1, 1], [1, 1]].forEach(([side, k]) => {
+  const dy = k * 0.02;
+  addTo(head, strand([
+    [side * 0.17, 0.2 - dy, 0.13],
+    [side * 0.215, 0.12 - dy, 0.11],
+    [side * 0.225, 0.04 - dy, 0.09],
+    [side * 0.2, -0.04 - dy, 0.07],
+  ], 0.012, 0.002, { seg: 18, radial: 8, pow: 0.9 }, k ? hairMat : hairHiMat), true, 0.002);
 });
 
 // back hair: overlapping strands from the crown falling behind the shoulders,
@@ -354,6 +395,13 @@ const dressProfile = [
 const dressGeo = new THREE.LatheGeometry(dressProfile, 48);
 const dressMesh = new THREE.Mesh(dressGeo, toon(C.dress, { side: THREE.DoubleSide }));
 addTo(body, dressMesh, true, 0.004);
+
+// petticoat: a lavender-pink underskirt whose frill shows below the dress hem
+const petticoatProfile = [
+  [0.09, 0.92], [0.18, 0.8], [0.27, 0.66], [0.34, 0.52], [0.39, 0.42], [0.41, 0.385],
+].map(([x, y]) => new THREE.Vector2(x, y));
+const petticoat = new THREE.Mesh(new THREE.LatheGeometry(petticoatProfile, 64), toon(0xffc6e6, { side: THREE.DoubleSide }));
+addTo(body, petticoat, true, 0.004);
 
 // trims: hem ring, collar ring, chest ribbon
 const trimMat = toon(C.dressTrim);
@@ -457,6 +505,13 @@ for (let i = 0; i < 9; i++) {
   character.add(m);
   sparkles.push(m);
 }
+
+// star hairpin on the left side of the bangs (kawaii accent)
+const pin = new THREE.Mesh(starGeo, starMat);
+pin.scale.setScalar(0.55);
+pin.position.set(-0.12, 0.2, 0.2);
+pin.rotation.z = 0.2;
+addTo(head, pin, true, 0.002);
 
 // ground disc
 const ground = new THREE.Mesh(
