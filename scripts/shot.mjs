@@ -19,11 +19,17 @@ const errors = [];
 page.on('pageerror', (e) => errors.push(String(e)));
 page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
 await page.goto(`http://localhost:${port}/index.html?shot=1`, { waitUntil: 'load' });
-await page.waitForFunction('window.__ready === true', { timeout: 60000 });
+await page.waitForFunction('window.__ready === true || window.__error', { timeout: 120000 });
+const err = await page.evaluate(() => window.__error); if (err) throw new Error(err);
 for (const v of views) {
-  await page.evaluate((name) => window.__renderView(name), v);
   const file = path.join(outDir, `view-${v}.png`);
-  await page.screenshot({ path: file });
+  // software GL is occasionally flaky: retry when the frame comes out blank (tiny PNG)
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    await page.evaluate((name) => window.__renderView(name), v);
+    await page.screenshot({ path: file });
+    if (fs.statSync(file).size > 20000) break;
+    console.log('blank frame, retrying', v, attempt);
+  }
   console.log('saved', file);
 }
 if (errors.length) console.log('ERRORS:\n' + errors.join('\n'));

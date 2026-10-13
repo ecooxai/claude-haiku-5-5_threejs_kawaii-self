@@ -1,0 +1,30 @@
+{
+  "skin": {
+    "vertices": 31012,
+    "triangles": 62012
+  },
+  "hair": {
+    "vertices": 84108,
+    "triangles": 168256
+  },
+  "sleeve": {
+    "vertices": 17236,
+    "triangles": 34464
+  },
+  "dress": {
+    "vertices": 55188,
+    "triangles": 110384
+  },
+  "petticoat": {
+    "vertices": 49836,
+    "triangles": 99672
+  },
+  "stocking": {
+    "vertices": 22224,
+    "triangles": 44440
+  },
+  "boot": {
+    "vertices": 17492,
+    "triangles": 34976
+  }
+}
