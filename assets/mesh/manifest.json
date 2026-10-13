@@ -1,11 +1,11 @@
 {
   "skin": {
-    "vertices": 31170,
-    "triangles": 62328
+    "vertices": 31378,
+    "triangles": 62744
   },
   "hair": {
-    "vertices": 87351,
-    "triangles": 174776
+    "vertices": 86936,
+    "triangles": 173908
   },
   "sleeve": {
     "vertices": 17236,

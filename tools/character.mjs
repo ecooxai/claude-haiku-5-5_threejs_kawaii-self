@@ -112,6 +112,7 @@ function skinSDF(x, y, z) {
     d = smin(d, sdEllipsoid(x, y, z, s * 0.2, 1.35, 0.0, 0.03, 0.05, 0.03), 0.02); // ears
     d = smin(d, sdRoundCone(x, y, z, [s * 0.2, 0.93, 0.03], [s * 0.25, 0.78, 0.09], 0.05, 0.032), 0.02); // forearm, angled out and forward so it clears the skirt
     d = smin(d, sdEllipsoid(x, y, z, s * 0.27, 0.73, 0.11, 0.038, 0.052, 0.03), 0.02); // hand, overlapping the wrist
+    d = smin(d, sdEllipsoid(x, y, z, s * 0.245, 0.74, 0.14, 0.016, 0.026, 0.02), 0.012); // thumb on the inner side
   }
   return d;
 }
@@ -186,7 +187,7 @@ function hairSDF(x, y, z) {
   const back = sdEllipsoid(x, y, z, 0, 1.22, -0.15, 0.2, 0.22, 0.15);
   const nape = sdEllipsoid(x, y, z, 0, 1.13, -0.1, 0.19, 0.24, 0.14);
   let d = smin(smin(cap, back, 0.06), nape, 0.08);
-  for (const c of hairChains) d = smin(d, sdChain(x, y, z, c), 0.01);
+  for (const c of hairChains) d = smin(d, sdChain(x, y, z, c), 0.025); // wider blend: the bang chains no longer leave creases on the crown
   return d;
 }
 
