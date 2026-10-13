@@ -143,7 +143,7 @@ for (let i = 0; i < 20; i++) {
     [x0 * 1.05, 0.06, -0.2 - 0.03 * edge],
     [x0 * 1.12 + wave, -0.14, -0.22 - 0.02 * edge],
     [x0 * 1.25 + flare + wave, -0.34, -0.2],
-    [x0 * 1.35 + flare * 1.4, -0.5 - 0.02 * edge, -0.14],
+    [x0 * 1.35 + flare * 1.4, -0.5 - 0.02 * edge - 0.05 * (0.5 + 0.5 * Math.sin(i * 2.7)), -0.14], // ragged, uneven hem
   ]), 0.024, 0.014));
 }
 
@@ -207,20 +207,20 @@ const DRESS_PROFILE = [
   [0.15, 0.82], [0.2, 0.76], [0.26, 0.68], [0.31, 0.6], [0.355, 0.5], [0.375, 0.44], [0.38, 0.42],
 ];
 const PETTI_PROFILE = [
-  [0.09, 0.92], [0.16, 0.8], [0.23, 0.66], [0.3, 0.52], [0.36, 0.42], [0.42, 0.385],
+  [0.09, 0.92], [0.16, 0.8], [0.23, 0.66], [0.28, 0.52], [0.34, 0.42], [0.42, 0.385], // pulled in so it stays inside the pleated dress hem
 ];
 
 // radial pleats on the skirt: ripple the radius with angle, only in the skirt zone
-function shellSDF(profile, t, amp) {
+function shellSDF(profile, t, amp, pleats = 14) {
   return (x, y, z) => {
     const rho = Math.hypot(x, z);
     const th = Math.atan2(z, x);
     const w = smoothstep(0.7, 0.5, y);
-    const r = rho + amp * Math.cos(14 * th) * w;
+    const r = rho + amp * Math.cos(pleats * th) * w; // integer pleat count keeps the seam at ±π continuous
     return distPolyline(r, y, profile) - t;
   };
 }
-const dressSDF = shellSDF(DRESS_PROFILE, 0.007, 0.008);
+const dressSDF = shellSDF(DRESS_PROFILE, 0.007, 0.012, 18);
 const pettiSDF = shellSDF(PETTI_PROFILE, 0.008, 0.005);
 
 // ---------- PARTS: legs ----------

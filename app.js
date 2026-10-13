@@ -189,7 +189,7 @@ function bakeSheen(g, baseHex, hiHex) {
   const col = new Float32Array(count * 3);
   for (let i = 0; i < count; i++) {
     const d = Math.max(0, n[i * 3] * L.x + n[i * 3 + 1] * L.y + n[i * 3 + 2] * L.z);
-    c.copy(base).lerp(hi, Math.pow(d, 8));
+    c.copy(base).lerp(hi, Math.pow(d, 5));
     col.set([c.r, c.g, c.b], i * 3);
   }
   g.setAttribute('color', new THREE.BufferAttribute(col, 3));
@@ -199,7 +199,7 @@ const PART_STYLE = {
   skin: { mat: toon(C.skin), outline: 0.0035 },
   hair: { mat: toon(0xffffff, { side: THREE.DoubleSide, vertexColors: true }), outline: 0 }, // no shell: outlines show through the gaps between strands
   sleeve: { mat: toon(C.dress), outline: 0.0035 },
-  dress: { mat: toon(C.dress), outline: 0.0035 },
+  dress: { mat: toon(C.dress), outline: 0 }, // no shell: outline copies poked dark specks through the pleats
   petticoat: { mat: toon(0xffc6e6), outline: 0.0035 },
   stocking: { mat: toon(C.stocking), outline: 0.0035 },
   boot: { mat: toon(C.boot), outline: 0.0035 },
@@ -328,8 +328,13 @@ for (const s of [-1, 1]) {
 
 // dress trims
 const trimMat = toon(C.dressTrim);
-const hem = new THREE.Mesh(new THREE.TorusGeometry(0.38, 0.014, 10, 72), trimMat);
-hem.rotation.x = Math.PI / 2;
+// the hem trim follows the dress pleats (18 folds, same formula as tools/character.mjs)
+const hemPts = [];
+for (let i = 0; i < 216; i++) {
+  const th = (i / 216) * Math.PI * 2, r = 0.378 - 0.012 * Math.cos(18 * th);
+  hemPts.push(new THREE.Vector3(r * Math.cos(th), 0, r * Math.sin(th)));
+}
+const hem = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(hemPts, true), 360, 0.014, 10, true), trimMat);
 hem.position.set(0, 0.43, 0);
 addTo(body, hem, true, 0.003);
 

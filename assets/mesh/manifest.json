@@ -4,20 +4,20 @@
     "triangles": 62012
   },
   "hair": {
-    "vertices": 87382,
-    "triangles": 174816
+    "vertices": 89367,
+    "triangles": 178804
   },
   "sleeve": {
     "vertices": 17236,
     "triangles": 34464
   },
   "dress": {
-    "vertices": 55188,
-    "triangles": 110384
+    "vertices": 56080,
+    "triangles": 112320
   },
   "petticoat": {
-    "vertices": 49836,
-    "triangles": 99672
+    "vertices": 48928,
+    "triangles": 97856
   },
   "stocking": {
     "vertices": 22224,
